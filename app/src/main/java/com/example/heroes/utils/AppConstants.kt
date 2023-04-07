@@ -10,6 +10,6 @@ class AppConstants {
             "?apikey=${MARVEL_API_KEY}" +
                     "&hash=${MARVEL_API_HASH}" +
                     "&ts=${MARVEL_API_TIMESTAMP}" +
-                    "&startYear=2011&limit=10"
+                    "&startYear=2018"
     }
 }

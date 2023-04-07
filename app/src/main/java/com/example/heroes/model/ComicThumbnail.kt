@@ -4,7 +4,7 @@ data class ComicThumbnail(
     val path: String,
     val extension: String
 ) {
-    fun getThumbnailComicBook(): String {
+    fun getThumbnailUrlComicBook(): String {
         return "$path.$extension"
     }
 }
