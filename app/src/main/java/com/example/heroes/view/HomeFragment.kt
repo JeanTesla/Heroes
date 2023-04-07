@@ -3,11 +3,15 @@ package com.example.heroes.view
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.heroes.R
@@ -21,7 +25,7 @@ class HomeFragment : Fragment() {
 
     private val homeViewModel = HomeViewModel
     private val comicBookList = ArrayList<ComicResult>()
-    private var comicBookRecycleViewAdapter = ComicBookAdapter(comicBookList)
+    private lateinit var comicBookRecycleViewAdapter: ComicBookAdapter
 
     private lateinit var editTextFindComicBook: EditText
     private lateinit var buttonFindComicBook: ImageButton
@@ -54,12 +58,23 @@ class HomeFragment : Fragment() {
         textViewNetworkError = fragment.findViewById(R.id.textViewNetworkError)
         progressBar = fragment.findViewById(R.id.progressBar)
 
-        recycleView.layoutManager = LinearLayoutManager(
+        val layoutManager = LinearLayoutManager(
             context, LinearLayoutManager.VERTICAL, false
         )
 
-        recycleView.adapter = comicBookRecycleViewAdapter
+        recycleView.layoutManager = layoutManager
 
+        comicBookRecycleViewAdapter = ComicBookAdapter(comicBookList, onClickListItem)
+
+        val divider = DividerItemDecoration(
+            context,
+            layoutManager.orientation
+        )
+        divider.setDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.divider)!!)
+
+
+        recycleView.addItemDecoration(divider)
+        recycleView.adapter = comicBookRecycleViewAdapter
 
         buttonFindComicBook.setOnClickListener {
             showLoading()
@@ -68,7 +83,7 @@ class HomeFragment : Fragment() {
             homeViewModel.getAllComics(queryStringSearch)
         }
 
-        buttonClearFilters.setOnClickListener{
+        buttonClearFilters.setOnClickListener {
             clearFilters()
         }
 
@@ -90,16 +105,15 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         homeViewModel.comicBookList.observe(viewLifecycleOwner, Observer {
-            Toast.makeText(requireContext(), "Entrou aqui", Toast.LENGTH_LONG).show()
             comicBookList.clear()
             comicBookList.addAll(it)
             comicBookRecycleViewAdapter.notifyDataSetChanged()
 
-            if(it.isNotEmpty()) showList() else showNotFound()
+            if (it.isNotEmpty()) showList() else showNotFound()
         })
 
         homeViewModel.comicRequestError.observe(viewLifecycleOwner, Observer {
-            if(it) showNetworkError()
+            if (it) showNetworkError()
         })
 
         homeViewModel.getAllComics(queryStringSearch)
@@ -119,35 +133,42 @@ class HomeFragment : Fragment() {
             }
         }
 
-    fun showLoading(){
+    private val onClickListItem = { item: ComicResult ->
+        Toast.makeText(context, item.title, Toast.LENGTH_LONG).show()
+//        childFragmentManager.commit {
+//            add(R.id.fragmentContainerView, ComicBookDescriptionFragment())
+//        }
+    }
+
+    fun showLoading() {
         progressBar.visibility = View.VISIBLE
         recycleView.visibility = View.GONE
         textViewNotFound.visibility = View.GONE
         textViewNetworkError.visibility = View.GONE
     }
 
-    fun showNotFound(){
+    fun showNotFound() {
         progressBar.visibility = View.GONE
         recycleView.visibility = View.GONE
         textViewNotFound.visibility = View.VISIBLE
         textViewNetworkError.visibility = View.GONE
     }
 
-    fun showNetworkError(){
+    fun showNetworkError() {
         progressBar.visibility = View.GONE
         recycleView.visibility = View.GONE
         textViewNotFound.visibility = View.GONE
         textViewNetworkError.visibility = View.VISIBLE
     }
 
-    fun showList(){
+    fun showList() {
         progressBar.visibility = View.GONE
         recycleView.visibility = View.VISIBLE
         textViewNotFound.visibility = View.GONE
         textViewNetworkError.visibility = View.GONE
     }
 
-    fun clearFilters(){
+    fun clearFilters() {
         editTextFindComicBook.text.clear()
         editTextInitialDate.text = "Data Inicial"
         editTextFinalDate.text = "Data Final"
