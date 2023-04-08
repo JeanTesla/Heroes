@@ -11,6 +11,8 @@ interface ComicApi {
     fun getComics(
         @Query("titleStartsWith") titleStartsWith: String?,
         @Query("limit") limit: Int?,
-        @Query("dateRange", encoded = true) rangeDate: String?
+        @Query("dateRange", encoded = true) rangeDate: String?,
+        @Query("startYear") startYear: String?,
+        @Query("format") format: String?,
     ): Call<Comic>
 }

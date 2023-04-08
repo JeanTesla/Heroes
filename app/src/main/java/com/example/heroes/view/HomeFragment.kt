@@ -2,8 +2,8 @@ package com.example.heroes.view
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -11,6 +11,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +21,7 @@ import com.example.heroes.model.ComicResult
 import com.example.heroes.model.QueryStringCreatorComicSearch
 import com.example.heroes.view.components.DatePickerFragment
 import com.example.heroes.viewmodel.HomeViewModel
+import okhttp3.internal.notify
 
 class HomeFragment : Fragment() {
 
@@ -40,10 +42,19 @@ class HomeFragment : Fragment() {
 
     private var queryStringSearch = QueryStringCreatorComicSearch()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        queryStringSearch.format = "comic"
+        queryStringSearch.startYear = "2022"
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
+        Toast.makeText(context, "Entrou aqui novamente", Toast.LENGTH_LONG).show()
+        Log.d("AAAA",queryStringSearch.toString())
 
         val fragment = inflater.inflate(R.layout.fragment_home, container, false)
 
@@ -71,7 +82,6 @@ class HomeFragment : Fragment() {
             layoutManager.orientation
         )
         divider.setDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.divider)!!)
-
 
         recycleView.addItemDecoration(divider)
         recycleView.adapter = comicBookRecycleViewAdapter
@@ -110,6 +120,8 @@ class HomeFragment : Fragment() {
             comicBookRecycleViewAdapter.notifyDataSetChanged()
 
             if (it.isNotEmpty()) showList() else showNotFound()
+
+            queryStringSearch.clearInitialParameters()
         })
 
         homeViewModel.comicRequestError.observe(viewLifecycleOwner, Observer {
@@ -134,10 +146,11 @@ class HomeFragment : Fragment() {
         }
 
     private val onClickListItem = { item: ComicResult ->
-        Toast.makeText(context, item.title, Toast.LENGTH_LONG).show()
-//        childFragmentManager.commit {
-//            add(R.id.fragmentContainerView, ComicBookDescriptionFragment())
-//        }
+        //Toast.makeText(context, item.title, Toast.LENGTH_LONG).show()
+        activity?.supportFragmentManager?.commit(){
+            replace(R.id.nav_host_fragment,ComicBookDescriptionFragment.newInstance(item))
+            addToBackStack(null)
+        }; Unit
     }
 
     fun showLoading() {
@@ -172,6 +185,6 @@ class HomeFragment : Fragment() {
         editTextFindComicBook.text.clear()
         editTextInitialDate.text = "Data Inicial"
         editTextFinalDate.text = "Data Final"
-        queryStringSearch.clear()
+        queryStringSearch.clearAll()
     }
 }

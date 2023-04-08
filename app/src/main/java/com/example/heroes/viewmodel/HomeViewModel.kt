@@ -27,7 +27,10 @@ class HomeViewModel : ViewModel() {
             retrofitClient.getComics(
                 queryString.titleStartsWith,
                 queryString.limit,
-                queryString.getConcatenatedDateRange()).enqueue(object : Callback<Comic> {
+                queryString.getConcatenatedDateRange(),
+                queryString.startYear,
+                queryString.format
+            ).enqueue(object : Callback<Comic> {
 
                 override fun onResponse(call: Call<Comic>, response: Response<Comic>) {
                     comicBookList.value = response.body()?.data?.results

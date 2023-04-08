@@ -6,7 +6,7 @@ data class ComicResult (
     val title: String,
     val issueNumber: Long,
     val variantDescription: String,
-    val description: String,
+    val description: String?,
     val modified: String,
     val isbn: String,
     val upc: String,
@@ -24,4 +24,5 @@ data class ComicResult (
     val prices: List<ComicPrice>,
     val thumbnail: ComicThumbnail,
     val images: List<ComicThumbnail>,
+    val creators: ComicCreators
 )

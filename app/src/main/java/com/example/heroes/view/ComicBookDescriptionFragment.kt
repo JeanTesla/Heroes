@@ -1,60 +1,106 @@
 package com.example.heroes.view
 
+import android.annotation.SuppressLint
+import android.content.res.Resources
+import android.os.Build
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.annotation.RequiresApi
+import androidx.fragment.app.Fragment
+import androidx.viewpager2.widget.CompositePageTransformer
+import androidx.viewpager2.widget.MarginPageTransformer
+import androidx.viewpager2.widget.ViewPager2
+import com.bumptech.glide.Glide
 import com.example.heroes.R
+import com.example.heroes.adapter.CarouselRVAdapter
+import com.example.heroes.model.ComicCreators
+import com.example.heroes.model.ComicResult
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ComicBookDescriptionFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ComicBookDescriptionFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+
+    private lateinit var selectedComicResultItem: ComicResult
+
+    private lateinit var viewPager: ViewPager2
+    private lateinit var imageViewComicBookDescription: ImageView
+    private lateinit var textViewComicTitleDescription: TextView
+    private lateinit var textViewComicYear: TextView
+    private lateinit var textViewComicPages: TextView
+    private lateinit var textViewCreators: TextView
+    private lateinit var textViewDescription: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_comic_book_description, container, false)
+        val fragment = inflater.inflate(R.layout.fragment_comic_book_description, container, false)
+
+        viewPager = fragment.findViewById<ViewPager2?>(R.id.view_pager).apply {
+            clipChildren = false
+            clipToPadding = false
+            offscreenPageLimit = 3
+        }
+
+        viewPager.adapter = CarouselRVAdapter(ArrayList(selectedComicResultItem.images))
+
+        val compositePageTransformer = CompositePageTransformer()
+        compositePageTransformer.addTransformer(MarginPageTransformer((40 * Resources.getSystem().displayMetrics.density).toInt()))
+        viewPager.setPageTransformer(compositePageTransformer)
+
+        imageViewComicBookDescription = fragment.findViewById(R.id.imageViewComicBookDescription)
+        textViewComicTitleDescription = fragment.findViewById(R.id.textViewComicTitleDescription)
+        textViewComicYear = fragment.findViewById(R.id.textViewComicYear)
+        textViewComicPages = fragment.findViewById(R.id.textViewComicPages)
+        textViewCreators = fragment.findViewById(R.id.textViewCreators)
+        textViewDescription = fragment.findViewById(R.id.textViewDescription)
+
+        with(selectedComicResultItem) {
+            Glide.with(requireContext()).load(thumbnail.getThumbnailUrlComicBook())
+                .into(imageViewComicBookDescription);
+
+            textViewComicTitleDescription.text = title
+            textViewComicYear.text = formatCreationDate(modified)
+            textViewComicPages.text = pageCount.toString()
+            textViewCreators.text = getCreatorsComicBook(creators)
+            textViewDescription.text = description ?: "Sem Descrição"
+        }
+
+        return fragment
+    }
+
+    fun getCreatorsComicBook(creators: ComicCreators): String {
+        return creators.items.joinToString(separator = ",") { it.name }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun formatCreationDate(date: String): String{
+        var stringDate: String
+        try {
+            stringDate = LocalDate.parse(date.substring(0,10))
+                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+        }catch (_: RuntimeException){
+            stringDate = "Sem Data"
+        }
+        return stringDate
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ComicBookDescriptionFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ComicBookDescriptionFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+        fun newInstance(comicResult: ComicResult): ComicBookDescriptionFragment {
+            return ComicBookDescriptionFragment().apply {
+                selectedComicResultItem = comicResult
             }
+        }
     }
 }

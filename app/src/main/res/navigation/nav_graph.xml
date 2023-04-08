@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment3">
+    <fragment
+        android:id="@+id/homeFragment3"
+        android:name="com.example.heroes.view.HomeFragment"
+        android:label="HomeFragment" >
+        <action
+            android:id="@+id/action_homeFragment3_to_comicBookDescriptionFragment2"
+            app:destination="@id/comicBookDescriptionFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/comicBookDescriptionFragment2"
+        android:name="com.example.heroes.view.ComicBookDescriptionFragment"
+        android:label="fragment_comic_book_description"
+        tools:layout="@layout/fragment_comic_book_description" />
+</navigation>
